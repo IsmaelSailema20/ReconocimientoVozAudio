@@ -108,9 +108,15 @@ def recognize_face(request):
             from datetime import datetime
             request.session['login_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             
+            # FORZAR el guardado inmediato de la sesión
+            request.session.modified = True
+            request.session.save()
+            
+            # Agregar flag para indicar redirect al frontend
             return JsonResponse({
                 'success': True,
                 'authorized': True,
+                'redirect': '/dashboard/',  # Agregar URL de redirect
                 'name': result['name'],
                 'confidence': result['confidence'],
                 'confidence_gap': result['confidence_gap'],

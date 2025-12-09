@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Sistema de Reconocimiento Facial</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --danger-color: #e74c3c;
+            --light-bg: #ecf0f1;
+            --white: #ffffff;
+            --shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light-bg);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+            box-shadow: var(--shadow);
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h1 {
+            font-size: 1.8em;
+            font-weight: 700;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .welcome-card {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .welcome-card h2 {
+            color: var(--primary-color);
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+
+        .welcome-card p {
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .info-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .info-card-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .info-card h3 {
+            color: var(--primary-color);
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .info-card p {
+            color: #7f8c8d;
+            line-height: 1.6;
+        }
+
+        .session-info {
+            background: #e8f5e9;
+            border-left: 4px solid var(--success-color);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .session-info strong {
+            color: var(--success-color);
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn-primary {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .actions {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .security-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .navbar-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .welcome-card h2 {
+                font-size: 2em;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <h1>🔐 Sistema de Reconocimiento Facial</h1>
+            <div class="user-info">
+                <div class="user-avatar">👤</div>
+                <div>
+                    <div style="font-weight: 600;">{{ user_name }}</div>
+                    <div style="font-size: 0.9em; opacity: 0.9;">Usuario Autorizado</div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="welcome-card">
+            <h2>¡Bienvenido/a, {{ user_name }}! 👋</h2>
+            <p>Has iniciado sesión exitosamente mediante reconocimiento facial</p>
+            
+            <div class="session-info">
+                <strong>🕒 Hora de inicio de sesión:</strong> {{ login_time }}
+            </div>
+
+            <div class="security-badge">
+                <span>🛡️</span>
+                <span>Autenticación biométrica verificada</span>
+            </div>
+
+            <div class="actions">
+                <a href="/logout/" class="btn btn-danger">🚪 Cerrar Sesión</a>
+            </div>
+        </div>
+
+        <div class="cards-grid">
+            <div class="info-card">
+                <div class="info-card-icon">✅</div>
+                <h3>Acceso Verificado</h3>
+                <p>Tu identidad ha sido confirmada mediante reconocimiento facial con alta confianza. El sistema garantiza la seguridad de tu sesión.</p>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-icon">🔒</div>
+                <h3>Seguridad Biométrica</h3>
+                <p>Utilizamos tecnología de deep learning con FaceNet y redes neuronales convolucionales para garantizar la máxima seguridad.</p>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-icon">⚡</div>
+                <h3>Reconocimiento en Tiempo Real</h3>
+                <p>El sistema analiza y verifica tu identidad en milisegundos, proporcionando una experiencia de acceso rápida y segura.</p>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-icon">🎯</div>
+                <h3>Alta Precisión</h3>
+                <p>Nuestro modelo alcanza una precisión superior al 95% en la identificación facial, minimizando falsos positivos y negativos.</p>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-icon">🛡️</div>
+                <h3>Privacidad Protegida</h3>
+                <p>Tus datos biométricos están protegidos y solo se utilizan para verificación de identidad. No se almacenan imágenes originales.</p>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-icon">📊</div>
+                <h3>Sistema Inteligente</h3>
+                <p>El modelo fue entrenado con arquitectura FaceNet (embeddings 512D) + CNN personalizada para clasificación óptima.</p>
+            </div>
+        </div>
+
+        <div class="welcome-card" style="margin-top: 30px;">
+            <h3 style="color: var(--primary-color); margin-bottom: 15px;">📋 Información de la Sesión</h3>
+            <p style="color: #7f8c8d; line-height: 1.8;">
+                <strong>Usuario:</strong> {{ user_name }}<br>
+                <strong>Método de autenticación:</strong> Reconocimiento Facial Biométrico<br>
+                <strong>Nivel de seguridad:</strong> Alto<br>
+                <strong>Estado:</strong> <span style="color: var(--success-color); font-weight: 600;">✓ Activo</span><br>
+                <strong>Duración de sesión:</strong> 1 hora (renovable automáticamente)
+            </p>
+        </div>
+    </div>
+</body>
+</html>

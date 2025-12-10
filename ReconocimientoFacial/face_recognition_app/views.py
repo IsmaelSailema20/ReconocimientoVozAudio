@@ -99,7 +99,7 @@ def recognize_face(request):
             }, status=400)
         
         # Realizar predicción con parámetros ajustados
-        result = system.predict(image, threshold=0.80, min_confidence_gap=0.20)
+        result = system.predict(image, threshold=0.90, min_confidence_gap=0.20)
         
         # Si es una persona autorizada, crear sesión
         if result['authorized'] and result['name'] != 'Desconocido':

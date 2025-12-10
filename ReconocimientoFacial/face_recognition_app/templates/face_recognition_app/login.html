@@ -403,26 +403,61 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            padding: 18px;
+            gap: 15px;
+            padding: 20px 30px;
             border-radius: 12px;
             margin-top: 20px;
-            font-weight: 700;
-            font-size: 1.1em;
+            font-weight: 600;
+            font-size: 1.15em;
             border: 2px solid transparent;
+            min-height: 65px;
+            background: linear-gradient(135deg, rgba(25, 118, 210, 0.12), rgba(0, 229, 255, 0.08));
+            color: #ffffff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .recognition-status span {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1em;
+            line-height: 1.4;
+        }
+        
+        .recognition-status .emoji {
+            font-size: 1.5em;
+            display: inline-block;
+            min-width: 30px;
+            text-align: center;
         }
 
         .recognition-status.scanning {
-            background: linear-gradient(135deg, rgba(25, 118, 210, 0.15), rgba(0, 229, 255, 0.1));
-            color: var(--accent-color);
-            border-color: rgba(0, 229, 255, 0.3);
-            box-shadow: 0 0 30px rgba(0, 229, 255, 0.2);
+            background: linear-gradient(135deg, rgba(25, 118, 210, 0.2), rgba(0, 229, 255, 0.15));
+            color: #00e5ff;
+            border-color: rgba(0, 229, 255, 0.4);
+            box-shadow: 0 0 30px rgba(0, 229, 255, 0.3);
         }
 
         .recognition-status.detected {
-            background: linear-gradient(135deg, rgba(255, 196, 0, 0.15), rgba(255, 152, 0, 0.1));
-            color: var(--warning-color);
+            background: linear-gradient(135deg, rgba(0, 230, 118, 0.2), rgba(0, 200, 83, 0.15));
+            color: #00e676;
+            border-color: rgba(0, 230, 118, 0.4);
+            box-shadow: 0 0 30px rgba(0, 230, 118, 0.3);
+        }
+        
+        .recognition-status.warning {
+            background: linear-gradient(135deg, rgba(255, 196, 0, 0.2), rgba(255, 152, 0, 0.15));
+            color: #ffc400;
             border-color: rgba(255, 196, 0, 0.4);
+            box-shadow: 0 0 30px rgba(255, 196, 0, 0.3);
+        }
+        
+        .recognition-status.error {
+            background: linear-gradient(135deg, rgba(255, 23, 68, 0.2), rgba(244, 67, 54, 0.15));
+            color: #ff1744;
+            border-color: rgba(255, 23, 68, 0.4);
+            box-shadow: 0 0 30px rgba(255, 23, 68, 0.3);
         }
 
         .pulse {
@@ -624,6 +659,9 @@
         let lastRecognitionTime = 0;
         let currentFaceBox = null;
         let faceApiLoaded = false;
+        let faceDetectedTime = 0;  // Momento en que se detectó el rostro
+        let countdownInterval = null;
+        const RECOGNITION_DELAY = 3000;  // 3 segundos de espera
 
         // Iniciar cámara automáticamente
         window.addEventListener('load', async () => {
@@ -700,20 +738,38 @@
                             height: box.height
                         };
                         
+                        const now = Date.now();
+                        
+                        // Si es la primera vez que detectamos el rostro
+                        if (!currentFaceBox) {
+                            faceDetectedTime = now;
+                            console.log('✅ Rostro detectado - Iniciando cuenta regresiva de 3s');
+                            startCountdown();
+                        }
+                        
                         // Mostrar tracking box
                         showTrackingBox(faceRect);
                         currentFaceBox = faceRect;
                         
-                        // Si han pasado 3 segundos, hacer reconocimiento
-                        const now = Date.now();
-                        if ((now - lastRecognitionTime) > 3000) {
+                        // Calcular tiempo transcurrido desde detección
+                        const timeElapsed = now - faceDetectedTime;
+                        
+                        // Si han pasado 3 segundos Y no estamos procesando Y han pasado 3s desde último intento
+                        if (timeElapsed >= RECOGNITION_DELAY && !isProcessing && (now - lastRecognitionTime) > RECOGNITION_DELAY) {
                             lastRecognitionTime = now;
+                            stopCountdown();
                             captureAndRecognize();
                         }
                     } else {
-                        // Ocultar tracking box
+                        // Ocultar tracking box y resetear contador
                         hideTrackingBox();
                         currentFaceBox = null;
+                        faceDetectedTime = 0;
+                        stopCountdown();
+                        updateRecognitionStatus(
+                            '<span class="emoji">🔎</span><span>Buscando rostro...</span>',
+                            'scanning'
+                        );
                     }
                 } catch (error) {
                     console.error('Error en detección:', error);
@@ -764,9 +820,51 @@
                 faceBox.remove();  // Eliminar el elemento en lugar de ocultarlo
             }
         }
+        
+        function startCountdown() {
+            stopCountdown();  // Limpiar cualquier contador previo
+            
+            countdownInterval = setInterval(() => {
+                if (!currentFaceBox) {
+                    stopCountdown();
+                    return;
+                }
+                
+                const now = Date.now();
+                const timeElapsed = now - faceDetectedTime;
+                const timeRemaining = Math.max(0, Math.ceil((RECOGNITION_DELAY - timeElapsed) / 1000));
+                
+                if (timeRemaining > 0) {
+                    updateRecognitionStatus(
+                        `<span class="emoji">⏱️</span><span>Procesando en <strong>${timeRemaining}</strong> segundo${timeRemaining !== 1 ? 's' : ''}...</span>`,
+                        'scanning'
+                    );
+                } else {
+                    updateRecognitionStatus(
+                        `<span class="emoji">🔍</span><span>Analizando rostro detectado...</span>`,
+                        'detected'
+                    );
+                }
+            }, 100);  // Actualizar cada 100ms para suavidad
+        }
+        
+        function stopCountdown() {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+        }
+        
+        function updateRecognitionStatus(message, statusClass = '') {
+            recognitionStatus.innerHTML = message;
+            recognitionStatus.className = 'recognition-status ' + statusClass;
+        }
 
         async function captureAndRecognize() {
-            if (isProcessing || !currentFaceBox) return;
+            if (isProcessing || !currentFaceBox) {
+                console.log('⚠️ No se puede procesar: isProcessing=', isProcessing, 'currentFaceBox=', currentFaceBox);
+                return;
+            }
             
             isProcessing = true;
             console.log('🎯 Capturando rostro detectado para reconocimiento...');
@@ -815,9 +913,21 @@
                             `${result.name} - Confianza: ${(result.confidence * 100).toFixed(1)}%`);
                         
                         // Permitir nuevo intento después de 3 segundos
-                        setTimeout(() => {
-                            isProcessing = false;
-                        }, 3000);
+                        let countdown = 3;
+                        updateRecognitionStatus(`❌ Reintentando en ${countdown}s...`);
+                        const retryInterval = setInterval(() => {
+                            countdown--;
+                            if (countdown > 0) {
+                                updateRecognitionStatus(`❌ Reintentando en ${countdown}s...`);
+                            } else {
+                                clearInterval(retryInterval);
+                                isProcessing = false;
+                                faceDetectedTime = Date.now();  // Resetear contador
+                                if (currentFaceBox) {
+                                    startCountdown();
+                                }
+                            }
+                        }, 1000);
                     }
                 } else {
                     console.error('Error en reconocimiento:', result.error);

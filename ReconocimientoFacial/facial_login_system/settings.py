@@ -25,7 +25,21 @@ SECRET_KEY = 'django-insecure-_*m#tvju9#meast7q6fu1qi%&ezq1hfw4=*7-@qx*114g#+h8b
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# Configuración para ngrok
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '.ngrok-free.dev',  # Permitir subdominios de ngrok
+    '.ngrok.io',        # Formato antiguo de ngrok
+    'tromometric-lilianna-affectedly.ngrok-free.dev', 
+]
+
+# Configuración CSRF para ngrok
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.ngrok-free.dev',
+    'https://*.ngrok-free.app',
+    'https://*.ngrok.io',
+]
 
 
 # Application definition
